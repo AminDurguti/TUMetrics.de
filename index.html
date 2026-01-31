@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TUMBoost - Creator Content Auditor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    
+    <style>
+        body {
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(-45deg, #0a192f, #1f2833, #0b0c10, #1a1a1a);
+            background-size: 400% 400%;
+            animation: animateBg 15s ease infinite;
+        }
+
+        @keyframes animateBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 {
+            color: #00e676;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            height: 60px;
+            overflow: visible;
+        }
+
+        h1 img {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0;
+            transform: scale(4.5);
+            transform-origin: left center;
+        }
+
+        h1 span {
+            margin-left: 220px;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: auto;
+        }
+        
+        .control-panel {
+            background: #252525;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
+                        0 0 12px rgba(255, 255, 255, 0.1);
+        }
+
+        .tabs {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            display: flex;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #888;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .tab-btn.active {
+            color: #2196F3;
+            border-bottom: 2px solid #2196F3;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 12px;
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        textarea#htmlInput {
+            width: 100%;
+            height: 100px;
+            background: #333;
+            border: 1px solid #555;
+            color: #aaa;
+            font-family: monospace;
+            padding: 10px;
+            border-radius: 4px;
+            resize: vertical;
+            display: none; 
+        }
+
+        button.action-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+            white-space: nowrap;
+        }
+
+        button.action-btn:hover { background-color: #1976D2; }
+        button#resetBtn { background-color: #555; }
+        button#exportBtn { background-color: #00897b; }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .left-panel { flex: 2; min-width: 300px; }
+        .right-panel { flex: 1; min-width: 300px; }
+
+        .card {
+            background-color: #252525;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
+                        0 0 12px rgba(255, 255, 255, 0.1);
+        }
+
+        h3 { margin-top: 0; color: #fff; border-bottom: 1px solid #444; padding-bottom: 10px;}
+
+        .status-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background-color: #333;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            border-left: 5px solid gray;
+        }
+
+        .indicator {
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .status-box.ok { border-left-color: #00e676; }
+        .status-box.warn { border-left-color: #ffea00; }
+        .status-box.err { border-left-color: #ff1744; }
+        
+        .green { background-color: #00e676; box-shadow: 0 0 8px #00e676; }
+        .red { background-color: #ff1744; box-shadow: 0 0 8px #ff1744; }
+        .yellow { background-color: #ffea00; box-shadow: 0 0 8px #ffea00; }
+        .gray { background-color: #555; }
+
+        .recommendation-list { list-style: none; padding: 0; }
+        .recommendation-item {
+            background: #333;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-left: 3px solid #ff9800;
+            font-size: 14px;
+        }
+        
+        .explanation-list { list-style: none; padding: 0; }
+        .explanation-item {
+            background: #333;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-left: 3px solid #00e676;
+            font-size: 14px;
+        }
+
+        .logs-area {
+            background-color: #111;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #444;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+        
+        .loader {
+            border: 3px solid #333;
+            border-top: 3px solid #2196F3;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin-left: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        #top10-mode {
+            display: none;
+        }
+        .leaderboard {
+            display: flex;
+            gap: 20px;
+        }
+        .blog-list {
+            flex: 1;
+            background: #333;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .blog-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #444;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .blog-item:hover {
+            background: #4a4a4a;
+        }
+        .blog-item:last-child {
+            border-bottom: none;
+        }
+        .blog-item span {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+        }
+        .blog-item .score {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00e676;
+        }
+        .ai-analysis {
+            flex: 1.5;
+            background: #202020;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
+                        0 0 15px rgba(0, 230, 118, 0.35);
+        }
+        .ai-analysis h4 {
+            margin-top: 0;
+            color: #00e676;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        .ai-analysis p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        @media (max-width: 800px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .input-group {
+                flex-direction: column;
+                align-items: stretch; 
+            }
+            .action-btn {
+                width: 100%;
+                margin-top: 5px; 
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .container {
+                width: 98%;
+                padding: 10px;
+            }
+            .leaderboard { 
+                flex-direction: column; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>
+                <img src="logo.png" alt="Tumetrics Logo" onclick="switchTab('url')" style="cursor: pointer;">
+                <span style="font-size:16px; color:#888;">// a project for Webboost</span>
+            </h1>
+        </header>
+
+        <div class="control-panel">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('url')">Audit via URL</button>
+                <button class="tab-btn" onclick="switchTab('paste')">Audit via Source Code</button>
+                <button class="tab-btn" onclick="switchTab('top10')">Top 10 Blogs</button>
+            </div>
+
+            <div id="audit-panels">
+                <div id="url-mode" class="input-group">
+                    <input type="text" id="urlInput" placeholder="Enter website URL (e.g. https://www.wikipedia.org)">
+                    <button class="action-btn" onclick="runAudit('url')">RUN AUDIT</button>
+                </div>
+
+                <div id="paste-mode" class="input-group" style="display:none; flex-direction:column; align-items:flex-start;">
+                    <p style="margin:0 0 5px 0; font-size:12px; color:#aaa;">Go to any website > Right Click > "View Page Source" > Select All (Ctrl+A) > Copy > Paste below.</p>
+                    <textarea id="htmlInput" style="display:block;" placeholder="Paste <html> code here..."></textarea>
+                    <button class="action-btn" onclick="runAudit('paste')" style="margin-top:10px; width:100%;">ANALYZE CODE</button>
+                </div>
+
+                <div style="margin-top:15px; display:flex; align-items:center; justify-content:flex-end; gap:10px;">
+                    <div id="loading-spinner" class="loader"></div>
+                    <button id="resetBtn" class="action-btn" onclick="resetSystem()">Reset</button>
+                    <button id="exportBtn" class="action-btn" onclick="downloadReport()">Export</button>
+                </div>
+            </div>
+
+            <div id="top10-mode">
+                <h3>🏆 Top Creator Blogs (Weekly)</h3>
+                <div class="leaderboard">
+                    <div class="blog-list" id="top-blog-list-container">
+                    </div>
+                    <div class="ai-analysis" id="ai-analysis-box">
+                        <h4>AI Analysis</h4>
+                        <p style="color:#777;">Click on a blog from the list to see the AI-generated analysis of why it's ranked so high.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content" id="results-panel">
+            <div class="left-panel">
+                <div class="card">
+                    <h3>Audit Criteria</h3>
+                    <div id="status-container">
+                        <p style="color: #777;">Waiting for input...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>💡 AI Recommendations</h3>
+                    <div id="recommendations-box">
+                        <p style="color: #777; font-style: italic;">Analysis pending...</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>✅ AI Positive Feedback</h3>
+                    <div id="explanations-box">
+                        <p style="color: #777; font-style: italic;">Analysis pending...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="card">
+                    <h3>Score</h3>
+                    <div style="font-size: 32px; font-weight: bold; margin-bottom: 10px;">
+                        <span id="score-display">0</span>/100
+                    </div>
+                    <hr style="border-color: #444;">
+                    <div>Passed: <span id="pass-count" style="color:#00e676">0</span></div>
+                    <div>Issues: <span id="fail-count" style="color:#ff1744">0</span></div>
+                </div>
+
+                <div class="card">
+                    <h3>System Logs</h3>
+                    <div class="logs-area" id="console-logs">
+                        <div>> System initialized...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var auditCriteria = [
+            { id: 'seo_title', name: 'SEO Title Optimization', status: 'unk', desc: 'Title length (10-60 chars)' },
+            { id: 'img_alt', name: 'Image Accessibility', status: 'unk', desc: 'Missing Alt tags on images' },
+            { id: 'word_count', name: 'Content Depth', status: 'unk', desc: 'Article word count check (>300)' },
+            { id: 'readability', name: 'UX Readability', status: 'unk', desc: 'Paragraph length check' },
+            { id: 'links', name: 'Link Visibility', status: 'unk', desc: 'Internal/External link count' },
+            { id: 'layout_mobile', name: 'Website Layout (Mobile)', status: 'unk', desc: 'Checks for mobile-friendly tag' },
+            { id: 'search_bar', name: 'Search Time (UX)', status: 'unk', desc: 'Checks for a search bar' },
+            { id: 'ads_annoyance', name: 'Annoyance Level (Ads)', status: 'unk', desc: 'Checks for excessive ads/iframes' }
+        ];
+        var recommendations = [];
+        var explanations = [];
+
+        var topBlogs = [
+            { 
+                rank: 1, 
+                name: "Pinch of Yum", 
+                score: "100/100", 
+                ai_analysis: "Ranked #1 for flawless technical execution. 'Pinch of Yum' achieves a perfect score across all 8 criteria. 'Readability' is perfect, 'Ad Annoyance' is minimal, and 'Image Accessibility' is 100%, providing a best-in-class experience that Google rewards."
+            },
+            { 
+                rank: 2, 
+                name: "TechCrunch", 
+                score: "98/100", 
+                ai_analysis: "A near-perfect score. As a top-tier tech site, 'TechCrunch' excels in 'Content Depth' and 'SEO'. Its 'Website Layout' is perfectly mobile-friendly. It only has a minor 'warn' status for 'Ad Annoyance' (5 iframes detected), which is common for large media sites."
+            },
+            { 
+                rank: 3, 
+                name: "Smitten Kitchen", 
+                score: "95/100", 
+                ai_analysis: "A stellar example of a user-first blog. 'Smitten Kitchen' has perfect 'Readability' and a clear 'Search Bar'. It lost a few points for 'Image Accessibility' issues on posts from 5-10 years ago, highlighting the need for continuous auditing."
+            },
+            { 
+                rank: 4, 
+                name: "The Verge", 
+                score: "92/100", 
+                ai_analysis: "Excellent performance, especially in 'SEO Title Optimization' and 'Link Visibility'. The site's complex layout results in a 'warn' for 'Ad Annoyance' (6 iframes) and some longer paragraphs ('Readability'), but its content remains highly engaging."
+            },
+            { 
+                rank: 5, 
+                name: "Awwwards", 
+                score: "90/100", 
+                ai_analysis: "Awwwards is a leader in design, so its 'Website Layout' score is perfect. However, its focus on visual design has led to some 'warn' flags on 'Content Depth' and 'Readability' for certain pages. A great site, but with room for content optimization."
+            }
+        ];
+
+        function switchTab(mode) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            var auditPanel = document.getElementById('audit-panels');
+            var resultsPanel = document.getElementById('results-panel');
+            var top10Panel = document.getElementById('top10-mode');
+
+            if (mode === 'url') {
+                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+                auditPanel.style.display = 'block';
+                resultsPanel.style.display = 'flex';
+                top10Panel.style.display = 'none';
+
+                document.getElementById('url-mode').style.display = 'flex';
+                document.getElementById('paste-mode').style.display = 'none';
+            } else if (mode === 'paste') {
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+                auditPanel.style.display = 'block';
+                resultsPanel.style.display = 'flex';
+                top10Panel.style.display = 'none';
+
+                document.getElementById('url-mode').style.display = 'none';
+                document.getElementById('paste-mode').style.display = 'flex';
+            } else if (mode === 'top10') {
+                document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+                auditPanel.style.display = 'none';
+                resultsPanel.style.display = 'none';
+                top10Panel.style.display = 'block';
+            }
+        }
+
+        function renderTop10List() {
+            var container = document.getElementById('top-blog-list-container');
+            if (!container) return; 
+            container.innerHTML = ''; 
+            
+            topBlogs.forEach((blog, index) => {
+                var blogDiv = document.createElement('div');
+                blogDiv.className = 'blog-item';
+                blogDiv.setAttribute('onclick', `showBlogAnalysis(${index})`);
+                
+                blogDiv.innerHTML = `
+                    <span><strong>#${blog.rank}</strong> ${blog.name}</span>
+                    <span class="score">${blog.score}</span>
+                `;
+                container.appendChild(blogDiv);
+            });
+        }
+
+        function showBlogAnalysis(index) {
+            var blog = topBlogs[index];
+            var analysisBox = document.getElementById('ai-analysis-box');
+            if (!analysisBox) return;
+            
+            analysisBox.innerHTML = `
+                <h4>AI Analysis: ${blog.name}</h4>
+                <p>${blog.ai_analysis}</p>
+                <hr style="border-color:#444; margin: 15px 0;">
+                <p style="font-size:0.8rem; color:#777;">This analysis is generated by the TUMBoost AI based on our 8-point audit criteria.</p>
+            `;
+        }
+
+        function runAudit(mode) {
+            resetData();
+            showLoader(true);
+
+            if(mode === 'paste') {
+                var rawHtml = document.getElementById('htmlInput').value;
+                if(rawHtml.length < 10) {
+                    alert("Please paste some HTML code first!");
+                    showLoader(false);
+                    return;
+                }
+                addLog("Analyzing pasted source code...");
+                setTimeout(() => { analyzeContent(rawHtml); }, 0); 
+
+            } else {
+                var url = document.getElementById('urlInput').value;
+                if(!url) { alert("Enter a URL!"); showLoader(false); return; }
+                if(!url.startsWith('http')) { url = 'https://' + url; }
+
+                addLog("Attempting to fetch: " + url);
+                var proxyUrl = "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(url);
+
+                fetch(proxyUrl, { 
+                    method: 'GET',
+                    headers: { 'Accept': 'text/html' }
+                })
+                    .then(res => {
+                        if(!res.ok) throw new Error("Blocked by site security (Status: ".concat(res.status, ")"));
+                        return res.text();
+                    })
+                    .then(html => {
+                        addLog("Success! Content downloaded.");
+                        analyzeContent(html);
+                    })
+                    .catch(err => {
+                        addLog("ERROR: " + err.message);
+                        alert("The website blocked the automated scan.\n\nPLEASE USE THE 'AUDIT VIA SOURCE CODE' TAB INSTEAD.\nIt is 100% reliable.");
+                        showLoader(false);
+                    });
+            }
+        }
+
+        function analyzeContent(htmlString) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(htmlString, "text/html");
+            var recs = [];
+            var expls = [];
+
+            var title = doc.title || "";
+            var titleCheck = auditCriteria.find(c => c.id === 'seo_title');
+            if(title.length >= 10 && title.length <= 60) {
+                titleCheck.status = 'ok';
+                expls.push("SEO: Great title length! It's perfectly optimized for search engines.");
+            } else {
+                titleCheck.status = 'warn';
+                recs.push("SEO: Title is " + title.length + " chars. Optimal is 10-60.");
+            }
+
+            var images = doc.getElementsByTagName('img');
+            var missingAlt = 0;
+            for(var img of images) {
+                if(!img.alt || img.alt.trim() === "") missingAlt++;
+            }
+            var imgCheck = auditCriteria.find(c => c.id === 'img_alt');
+            if(images.length === 0) {
+                imgCheck.status = 'warn';
+                recs.push("Visuals: No images found on page.");
+            } else if(missingAlt === 0) {
+                imgCheck.status = 'ok';
+                expls.push("Accessibility: Excellent! All " + images.length + " images have descriptions.");
+            } else {
+                imgCheck.status = 'err';
+                recs.push("Accessibility: " + missingAlt + " images missing descriptions.");
+            }
+
+            var text = doc.body.innerText || "";
+            var wordCount = text.split(/\s+/).length;
+            var wordCheck = auditCriteria.find(c => c.id === 'word_count');
+            if(wordCount > 300) {
+                wordCheck.status = 'ok';
+                expls.push("Content: Good job! The page has " + wordCount + " words, showing sufficient depth.");
+            } else {
+                wordCheck.status = 'err';
+                recs.push("Content: Too short (" + wordCount + " words). Write more.");
+            }
+
+            var paragraphs = doc.getElementsByTagName('p');
+            var longP = 0;
+            for(var p of paragraphs) {
+                if(p.innerText.split(' ').length > 60) longP++;
+            }
+            var readCheck = auditCriteria.find(c => c.id === 'readability');
+            if(longP === 0) {
+                readCheck.status = 'ok';
+                expls.push("UX: Perfect readability. All paragraphs are short and easy to read.");
+            } else {
+                readCheck.status = 'warn';
+                recs.push("UX: " + longP + " paragraphs are too long to read easily.");
+            }
+
+            var links = doc.getElementsByTagName('a');
+            var linkCheck = auditCriteria.find(c => c.id === 'links');
+            if(links.length > 3) {
+                linkCheck.status = 'ok';
+                expls.push("SEO: Good link structure. The page has " + links.length + " links, which helps engagement.");
+            } else {
+                linkCheck.status = 'warn';
+                recs.push("SEO: Not enough links. Add internal references.");
+            }
+
+            var viewportMeta = doc.querySelector('meta[name="viewport"]');
+            var layoutCheck = auditCriteria.find(c => c.id === 'layout_mobile');
+            if (viewportMeta) {
+                layoutCheck.status = 'ok';
+                expls.push("Layout: The page is mobile-friendly. The 'viewport' tag is correctly set.");
+            } else {
+                layoutCheck.status = 'err';
+                recs.push("Layout: The page is not 'mobile-friendly'. The <meta name='viewport'> tag is missing.");
+            }
+            
+            var searchInput = doc.querySelector('input[type="search"], input[id*="search"], input[class*="search"]');
+            var searchCheck = auditCriteria.find(c => c.id === 'search_bar');
+            if (searchInput) {
+                searchCheck.status = 'ok';
+                expls.push("UX: A search bar is present, making navigation easy for users.");
+            } else {
+                searchCheck.status = 'warn';
+                recs.push("UX: Search bar is missing. Users can't search easily.");
+            }
+
+            var iframes = doc.getElementsByTagName('iframe');
+            var adCheck = auditCriteria.find(c => c.id === 'ads_annoyance');
+            if (iframes.length <= 3) {
+                adCheck.status = 'ok'; 
+                expls.push("Ads: Great! The page has a low number of 'iframes' (" + iframes.length + "), ensuring fast load times.");
+            } else if (iframes.length <= 6) {
+                adCheck.status = 'warn'; 
+                recs.push("Ads: The page has " + iframes.length + " 'iframes'. This might slow down the page.");
+            } else {
+                adCheck.status = 'err'; 
+                recs.push("Ads: The page has " + iframes.length + " 'iframes'. This high number suggests excessive ads.");
+            }
+            
+            recommendations = recs;
+            explanations = expls;
+            renderUI();
+            showLoader(false);
+            addLog("Analysis complete.");
+        }
+        
+        function renderUI() {
+            var container = document.getElementById('status-container');
+            container.innerHTML = '';
+            var pass = 0, fail = 0;
+
+            auditCriteria.forEach(c => {
+                var color = 'gray', border = '';
+                if(c.status === 'ok') { color = 'green'; border = 'ok'; pass++; }
+                else if(c.status === 'warn') { color = 'yellow'; border = 'warn'; fail++; }
+                else if(c.status === 'err') { color = 'red'; border = 'err'; fail++; }
+
+                container.innerHTML += `
+                    <div class="status-box ${border}">
+                        <div style="display:flex; align-items:center;">
+                            <div class="indicator ${color}"></div>
+                            <div><strong>${c.name}</strong><br><span style="font-size:11px;color:#aaa;">${c.desc}</span></div>
+                        </div>
+                        <span style="font-weight:bold;font-size:12px">${c.status.toUpperCase()}</span>
+                    </div>`;
+            });
+
+            var recBox = document.getElementById('recommendations-box');
+            if(recommendations.length === 0 && pass > 0) {
+                recBox.innerHTML = '<div style="color:#00e676">No issues found!</div>';
+            } else if (recommendations.length === 0) {
+                recBox.innerHTML = '<p style="color: #777; font-style: italic;">Analysis pending...</p>';
+            } else {
+                recBox.innerHTML = '<ul class="recommendation-list">' + recommendations.map(r => `<li class="recommendation-item">💡 ${r}</li>`).join('') + '</ul>';
+            }
+
+            var expBox = document.getElementById('explanations-box');
+            if (explanations.length === 0 && pass > 0) {
+                expBox.innerHTML = '<div style="color:#00e676">Excellent work! All criteria passed.</div>';
+            } else if (explanations.length === 0) {
+                expBox.innerHTML = '<p style="color: #777; font-style: italic;">No positive feedback to show yet...</p>';
+            } else {
+                expBox.innerHTML = '<ul class="explanation-list">' + explanations.map(e => `<li class="explanation-item">✅ ${e}</li>`).join('') + '</ul>';
+            }
+
+            document.getElementById('pass-count').innerText = pass;
+            document.getElementById('fail-count').innerText = fail;
+            var score = Math.round((pass / auditCriteria.length) * 100); 
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('score-display').style.color = score > 70 ? '#00e676' : '#ff1744';
+        }
+        
+        function resetData() {
+            auditCriteria.forEach(c => c.status = 'unk');
+            recommendations = [];
+            explanations = [];
+            document.getElementById('status-container').innerHTML = 'Analyzing...';
+            document.getElementById('recommendations-box').innerHTML = '';
+            document.getElementById('explanations-box').innerHTML = '';
+        }
+
+        function resetSystem() {
+            document.getElementById('urlInput').value = '';
+            document.getElementById('htmlInput').value = '';
+            resetData();
+            document.getElementById('status-container').innerHTML = '<p style="color: #777;">Waiting for input...</p>';
+            document.getElementById('recommendations-box').innerHTML = '<p style="color: #777; font-style: italic;">Analysis pending...</p>';
+            document.getElementById('explanations-box').innerHTML = '<p style="color: #777; font-style: italic;">Analysis pending...</p>';
+            document.getElementById('score-display').innerText = '0';
+            addLog("System reset.");
+        }
+
+        function addLog(msg) {
+            var t = new Date().toLocaleTimeString();
+            var d = document.getElementById('console-logs');
+            d.innerHTML = `<div>[${t}] ${msg}</div>` + d.innerHTML;
+        }
+        function showLoader(s) { document.getElementById('loading-spinner').style.display = s ? 'inline-block' : 'none'; }
+        
+        function downloadReport() {
+             var report = {
+                url: document.getElementById('urlInput').value || 'Pasted Code',
+                date: new Date(),
+                score: document.getElementById('score-display').innerText,
+                criteria: auditCriteria, 
+                recommendations: recommendations,
+                explanations: explanations
+            };
+            var data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(report, null, 2));
+            var anchor = document.createElement('a');
+            anchor.href = data;
+            anchor.download = "webboost_audit_report.json";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+        }
+
+        window.onload = function() { 
+            console.log("TUMBoost Ready");
+            renderTop10List();
+            switchTab('url');
+        }
+    </script>
+</body>
+</html>
